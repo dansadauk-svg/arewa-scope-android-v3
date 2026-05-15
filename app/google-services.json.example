@@ -1,0 +1,9 @@
+This project includes a placeholder app/google-services.json only so GitHub Actions can build the APK immediately.
+
+For real push notifications:
+1. Go to Firebase Console.
+2. Create a Firebase project.
+3. Add Android app with package name: com.arewascope.app
+4. Download the real google-services.json.
+5. Replace app/google-services.json with the real file.
+6. Commit the change and rebuild the APK.
