@@ -1,11 +1,9 @@
 package com.arewascope.app;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Insets;
 import android.net.ConnectivityManager;
@@ -13,7 +11,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +32,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends Activity {
 
@@ -43,9 +39,7 @@ public class MainActivity extends Activity {
     public static final String SITE_HOST = "arewascope.com.ng";
     public static final String NOTIFICATION_URL_EXTRA = "open_url";
 
-    private static final String FCM_TOPIC = "news";
     private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
-    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 2001;
 
     private WebView webView;
     private ProgressBar progressBar;
@@ -58,8 +52,6 @@ public class MainActivity extends Activity {
         setupSystemBarsAndCutout();
         buildLayout();
         setupWebView();
-        requestNotificationPermissionIfNeeded();
-        setupFirebaseMessaging();
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
@@ -390,38 +382,6 @@ public class MainActivity extends Activity {
         if (connectivityManager == null) return false;
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
-    }
-
-    private void requestNotificationPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_REQUEST_CODE);
-            }
-        }
-    }
-
-    private void setupFirebaseMessaging() {
-        try {
-            MyFirebaseMessagingService.createNotificationChannel(this);
-
-            FirebaseMessaging.getInstance().subscribeToTopic(FCM_TOPIC)
-                    .addOnCompleteListener(task -> {
-                        if (!task.isSuccessful()) {
-                            android.util.Log.w("ArewaScopeFCM", "Topic subscription failed", task.getException());
-                        }
-                    });
-
-            FirebaseMessaging.getInstance().getToken()
-                    .addOnCompleteListener(task -> {
-                        if (!task.isSuccessful()) {
-                            android.util.Log.w("ArewaScopeFCM", "Fetching FCM token failed", task.getException());
-                        } else {
-                            android.util.Log.d("ArewaScopeFCM", "FCM token ready");
-                        }
-                    });
-        } catch (Exception e) {
-            android.util.Log.w("ArewaScopeFCM", "Firebase setup skipped. Add real google-services.json.", e);
-        }
     }
 
     @Override
