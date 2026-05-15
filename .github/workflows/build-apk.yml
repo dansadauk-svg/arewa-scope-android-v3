@@ -28,42 +28,15 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-          cache-provider: basic
 
-      - name: Build Debug APK and save full log
-        shell: bash
-        run: |
-          set +e
-          gradle --no-daemon clean assembleDebug --stacktrace --info 2>&1 | tee build-log.txt
-          BUILD_EXIT_CODE=${PIPESTATUS[0]}
-          echo "BUILD_EXIT_CODE=$BUILD_EXIT_CODE" >> $GITHUB_ENV
-          exit 0
-
-      - name: Show important error lines
-        if: always()
-        shell: bash
-        run: |
-          echo "========= ERROR SUMMARY ========="
-          grep -n -i -E "FAILURE|Execution failed|Caused by|AAPT|error:|Exception|Could not|Unable|Duplicate|Manifest merger" build-log.txt | head -120 || true
-          echo "========= END ERROR SUMMARY ========="
-
-      - name: Upload full build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: arewa-build-log
-          path: build-log.txt
+      - name: Build Debug APK
+        run: gradle --no-daemon clean assembleDebug --stacktrace
 
       - name: Upload APK
-        if: env.BUILD_EXIT_CODE == '0'
         uses: actions/upload-artifact@v4
         with:
           name: ArewaScope-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Fail workflow if APK build failed
-        if: env.BUILD_EXIT_CODE != '0'
-        run: exit 1
